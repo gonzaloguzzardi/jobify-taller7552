@@ -1,10 +1,3 @@
-/*
- * Logger.cpp
- *
- *  Created on: Mar 19, 2016
- *      Author: gonzalo
- */
-
 #include "Logger.h"
 //#include <boost/filesystem.hpp>
 
