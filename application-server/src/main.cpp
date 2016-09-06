@@ -1,24 +1,20 @@
-#include "Server.h"
 #include <thread>
 #include <mutex>
+#include "utils/Logger.h"
+
+#include "SharedServerHandler.h"
 
 using namespace std;
 
-#define OVER_KEY "exit"
-
-void isItOver(){
-	string s
-	while (s.compare(OVER_KEY) != 0) {
-		cin >> s;
-	}
-}
 
 int main(){
 	//Setup
-	Server* server = new Server();
-	if (server->isReady())
-		server.run();
-	isItOver();	
-	delete server;
+	SharedServerHandler* sharedServerHandler = new SharedServerHandler();
+
+	sharedServerHandler->connectToUrl("http://google.com", NULL, NULL);
+	sharedServerHandler->run();
+
+	delete sharedServerHandler;
+	Logger::Instance()->Close();
 	return 0;
 }
