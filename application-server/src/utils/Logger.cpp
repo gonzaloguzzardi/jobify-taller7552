@@ -15,6 +15,7 @@ Logger::Logger()
     {
     	boost::filesystem::create_directory("Logfiles/");
     }*/
+    createlogfilesDirectory(0700);
 	std::string filename = generateFilename();
 
 	m_file.open( filename.c_str(), std::ios::out|std::ios::in|std::ios::app );
@@ -46,6 +47,15 @@ Logger::~Logger()
   m_file.flush();
   pthread_mutex_destroy(&m_logMutex);
   m_file.close();
+}
+
+void Logger::createlogfilesDirectory(const int permissionMode)
+{
+    struct stat st = {0};
+
+    if (stat("Logfiles/", &st) == -1) {
+        mkdir("Logfiles/", permissionMode);
+    }
 }
 
  void Logger::Log(const std::string& message, LogType logLevel)

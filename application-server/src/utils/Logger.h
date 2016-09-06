@@ -43,6 +43,7 @@ private:
     bool m_infoAvailable;
 
     string generateFilename();
+    void createlogfilesDirectory(const int permissionMode);
 
     //Por Singleton
     static Logger* s_pInstance;
