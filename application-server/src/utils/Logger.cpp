@@ -15,7 +15,8 @@ Logger::Logger()
     {
     	boost::filesystem::create_directory("Logfiles/");
     }*/
-    createlogfilesDirectory(0700);
+    int permissionMode = 0700;
+    createlogfilesDirectory(permissionMode);
 	std::string filename = generateFilename();
 
 	m_file.open( filename.c_str(), std::ios::out|std::ios::in|std::ios::app );
