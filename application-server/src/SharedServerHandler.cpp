@@ -5,13 +5,10 @@
 int SharedServerHandler::s_exit_flag = 0;
 std::string SharedServerHandler::s_url = "";
 
-SharedServerHandler::SharedServerHandler(): m_running(false),
-											m_maxSleepTime(DEFAULT_MAX_SLEEPTIME)
+SharedServerHandler::SharedServerHandler(): m_pollTime(DEFAULT_POLL_SLEEPTIME)
 {
-	m_nc = NULL;
-
+	m_connection = NULL;
 	mg_mgr_init(&m_manager, NULL);
-
 	//m_manager.user_data = this;
 }
 
@@ -20,29 +17,38 @@ SharedServerHandler::~SharedServerHandler()
    mg_mgr_free(&m_manager);
 }
 
-bool SharedServerHandler::isRunning()
-{
-	m_running = (s_exit_flag == 0? true: false);
-	return m_running;
-}
 
 void SharedServerHandler::connectToUrl(const std::string& url, const char* extraHeader, const char* postData)
 {
 	s_url = url;
 
 	//Se conecta a la url especificada
-	m_nc = mg_connect_http(&m_manager, eventHandler, s_url.c_str(), extraHeader, postData);
-	mg_set_protocol_http_websocket(m_nc);
+	m_connection = mg_connect_http(&m_manager, eventHandler, s_url.c_str(), extraHeader, postData);
+	mg_set_protocol_http_websocket(m_connection);
 
 	printConnectingMsg();
+}
+
+bool SharedServerHandler::isRunning()
+{
+	return (s_exit_flag == 0? true: false);
 }
 
 void SharedServerHandler::run()
 {
 	while(isRunning())
 	{
-		mg_mgr_poll(&m_manager, m_maxSleepTime);
+		mg_mgr_poll(&m_manager, m_pollTime);
 	}
+}
+
+void SharedServerHandler::stop()
+{
+	m_mtx.lock();
+
+	s_exit_flag = 1;
+
+	m_mtx.unlock();
 }
 
 void SharedServerHandler::eventHandler(struct mg_connection* connection, int event, void* eventData)

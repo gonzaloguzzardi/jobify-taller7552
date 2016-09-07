@@ -3,8 +3,10 @@
 
 #include "../src/3rdparty/mongoose/mongoose.h"
 #include <string>
+#include <mutex>
+using namespace std;
 
-#define DEFAULT_MAX_SLEEPTIME 1000
+#define DEFAULT_POLL_SLEEPTIME 1000
 
 class SharedServerHandler {
 public:
@@ -13,6 +15,8 @@ public:
 	virtual ~SharedServerHandler();
 
 
+	//todo Implementar los PUT, GET, POST, DELETE de acuerdo a lo solicitado
+	//Usaran la siguiente función
 
 	/* ConnectToUrl
 	 *
@@ -27,22 +31,24 @@ public:
 
     void run();
 
+    void stop();
+
 
 private:
 
-	bool m_running;
-
 	//maximo tiempo que puede dormir entre polls, en milisegundos
-	int m_maxSleepTime;
+	int m_pollTime;
 
     //variables de mangoose
     struct mg_mgr m_manager; //Se usa si va con Mongoose
-    struct mg_connection *m_nc;
+    struct mg_connection *m_connection;
+    std::mutex m_mtx;
 
     void printConnectingMsg();
 
     //variables estaticas que se usan en el event handler
     static void eventHandler(struct mg_connection* connection, int event, void* eventData);
+
     static int s_exit_flag;
     static std::string s_url;
 
