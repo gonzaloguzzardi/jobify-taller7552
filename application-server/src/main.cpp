@@ -11,7 +11,7 @@ int main(){
 	//Setup
 	SharedServerHandler* sharedServerHandler = new SharedServerHandler();
 
-	sharedServerHandler->connectToUrl("http://google.com", NULL, NULL);
+	sharedServerHandler->connectToUrl("http://jobify.professional.herokuapp.com", NULL, NULL);
 	sharedServerHandler->run();
 
 	delete sharedServerHandler;
