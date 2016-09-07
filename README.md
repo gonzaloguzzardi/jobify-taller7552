@@ -7,7 +7,6 @@
 * Juan Patricio Marshall
 
 ##Documentación:
-* Mongoose:
-** https://docs.cesanta.com/mongoose/master/
-** https://docs.cesanta.com/mongoose/dev/
+* Mongoose: https://docs.cesanta.com/mongoose/master/
+* Mongoose: https://docs.cesanta.com/mongoose/dev/
 
