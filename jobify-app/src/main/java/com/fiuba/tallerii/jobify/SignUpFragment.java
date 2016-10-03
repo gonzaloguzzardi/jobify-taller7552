@@ -3,7 +3,6 @@ package com.fiuba.tallerii.jobify;
 import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
 import android.annotation.TargetApi;
-import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.database.Cursor;
 import android.net.Uri;
@@ -37,38 +36,28 @@ import java.util.List;
 
 import static android.Manifest.permission.READ_CONTACTS;
 
-public class LogInFragment extends Fragment implements LoaderManager.LoaderCallbacks<Cursor>
+/**
+ *
+ * Sign Up Form - Has some duplicated code with Log In Fragment
+ */
+public class SignUpFragment extends Fragment  implements LoaderManager.LoaderCallbacks<Cursor>
 {
     /**
      * Id to identity READ_CONTACTS permission request.
      */
     private static final int REQUEST_READ_CONTACTS = 0;
 
-    /**
-     * A dummy authentication store containing known user names and passwords.
-     * TODO: remove after connecting to a real authentication system.
-     */
-    private static final String[] DUMMY_CREDENTIALS = new String[]{
-            "foo@example.com:hello", "bar@example.com:world"
-    };
-    /**
-     * Keep track of the login task to ensure we can cancel it if requested.
-     */
-    private UserLoginTask mAuthTask = null;
+    private UserSignUpTask mSignUpTask = null;
 
     // UI references.
     private AutoCompleteTextView mEmailAutocompleteText;
+    private EditText mFirstNameEditText;
+    private EditText mLastNameEditText;
     private EditText mPasswordEditText;
     private View mProgressView;
-    private View mLoginFormView;
+    private View mSignUpFormView;
 
-    private Button mSignInButton;
     private Button mSignUpButton;
-
-     // Variables temporales para configurar Conexión con el servidor
-    private EditText mIPEditText;
-    private Button mSubmitIPButton;
-    //**************************************************************
 
     @Override
     public void onCreate(Bundle savedInstanceState)
@@ -80,91 +69,43 @@ public class LogInFragment extends Fragment implements LoaderManager.LoaderCallb
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState)
     {
-        View v = inflater.inflate(R.layout.fragment_login, container, false);
+        View v = inflater.inflate(R.layout.fragment_signup, container, false);
 
-        // Set up the login form.
-        mEmailAutocompleteText = (AutoCompleteTextView) v.findViewById(R.id.email);
+        // Set up the sign up form.
+        mEmailAutocompleteText = (AutoCompleteTextView) v.findViewById(R.id.signup_email);
         populateAutoComplete();
 
-        mPasswordEditText = (EditText) v.findViewById(R.id.password);
+        mFirstNameEditText  = (EditText) v.findViewById(R.id.signup_first_name);
+        mLastNameEditText  = (EditText) v.findViewById(R.id.signup_last_name);
+
+        mPasswordEditText = (EditText) v.findViewById(R.id.signup_password);
         mPasswordEditText.setOnEditorActionListener(new TextView.OnEditorActionListener()
         {
             @Override
             public boolean onEditorAction(TextView textView, int id, KeyEvent keyEvent)
             {
-                if (id == R.id.login || id == EditorInfo.IME_NULL)
+                if (id == R.id.sign_up || id == EditorInfo.IME_NULL)
                 {
-                    attemptLogin();
+                    attemptSignUp();
                     return true;
                 }
                 return false;
             }
         });
 
-        mSignInButton = (Button) v.findViewById(R.id.sign_in_button);
-        mSignInButton.setOnClickListener(new View.OnClickListener()
-        {
-            @Override
-            public void onClick(View view)
-            {
-                attemptLogin();
-            }
-        });
-
-        mSignUpButton = (Button) v.findViewById(R.id.login_sign_up_button);
+        mSignUpButton = (Button) v.findViewById(R.id.signup_signup_button);
         mSignUpButton.setOnClickListener(new View.OnClickListener()
         {
             @Override
             public void onClick(View view)
             {
-                //Go to Sign Up Screen
-                OpenSignUpActivity();
+                attemptSignUp();
             }
         });
 
-         // Debug Information for checkpoint 2
-        mIPEditText = (EditText) v.findViewById(R.id.debug_ip_edittext);
-        mIPEditText.setOnEditorActionListener(new TextView.OnEditorActionListener()
-        {
-            @Override
-            public boolean onEditorAction(TextView textView, int id, KeyEvent keyEvent)
-            {
-                if (id == R.id.debug_submit_ip || id == EditorInfo.IME_NULL)
-                {
-                    SubmitIP(mIPEditText.getText().toString());
-                    return true;
-                }
-                return false;
-            }
-        });
-        mSubmitIPButton = (Button) v.findViewById(R.id.debug_submit_button);
-        mSubmitIPButton.setOnClickListener(new View.OnClickListener()
-        {
-            @Override
-            public void onClick(View view)
-            {
-                SubmitIP(mIPEditText.getText().toString());
-            }
-        });
-
-        //***********************************
-
-        mLoginFormView = v.findViewById(R.id.login_form);
-        mProgressView = v.findViewById(R.id.login_progress);
+        mSignUpFormView = v.findViewById(R.id.signup_form);
+        mProgressView = v.findViewById(R.id.signup_progress);
         return v;
-    }
-
-    private void OpenSignUpActivity()
-    {
-        Intent intent = new Intent(getActivity(), SignUpActivity.class);
-        startActivity(intent);
-    }
-
-    private void SubmitIP(String ip)
-    {
-        ServerHandler serverHandler = ServerHandler.get(getActivity());
-        serverHandler.setServerIP(ip);
-        Toast.makeText(getActivity(), "IP: " + ip + " submitted!", Toast.LENGTH_SHORT).show();
     }
 
     private void populateAutoComplete()
@@ -173,7 +114,6 @@ public class LogInFragment extends Fragment implements LoaderManager.LoaderCallb
         {
             return;
         }
-
         getLoaderManager().initLoader(0, null, this);
     }
 
@@ -222,29 +162,47 @@ public class LogInFragment extends Fragment implements LoaderManager.LoaderCallb
         }
     }
 
-
     /**
      * Attempts to sign in the account specified by the login form.
      * If there are form errors (invalid email, missing fields, etc.), the
      * errors are presented and no actual login attempt is made.
      */
-    private void attemptLogin()
+    private void attemptSignUp()
     {
-        if (mAuthTask != null)
+        if (mSignUpTask != null)
         {
             return;
         }
 
         // Reset errors.
+        mFirstNameEditText.setError(null);
+        mLastNameEditText.setError(null);
         mEmailAutocompleteText.setError(null);
         mPasswordEditText.setError(null);
 
         // Store values at the time of the login attempt.
+        String firstName = mFirstNameEditText.getText().toString();
+        String lastName = mLastNameEditText.getText().toString();
         String email = mEmailAutocompleteText.getText().toString();
         String password = mPasswordEditText.getText().toString();
 
         boolean cancel = false;
         View focusView = null;
+
+        //Check for a valid first name, if the user entered one
+        if (!TextUtils.isEmpty(password) && !isNameValid(firstName))
+        {
+            mFirstNameEditText.setError(getString(R.string.error_invalid_name));
+            focusView = mFirstNameEditText;
+            cancel = true;
+        }
+        //Check for a valid last name, if the user entered one
+        if (!TextUtils.isEmpty(password) && !isNameValid(lastName))
+        {
+            mLastNameEditText.setError(getString(R.string.error_invalid_name));
+            focusView = mLastNameEditText;
+            cancel = true;
+        }
 
         // Check for a valid password, if the user entered one.
         if (!TextUtils.isEmpty(password) && !isPasswordValid(password))
@@ -277,25 +235,39 @@ public class LogInFragment extends Fragment implements LoaderManager.LoaderCallb
             // Show a progress spinner, and kick off a background task to
             // perform the user login attempt.
             showProgress(true);
-            mAuthTask = new UserLoginTask(email, password);
-            mAuthTask.execute((Void) null);
+            User user = new User(firstName, lastName, email, password);
+            mSignUpTask = new UserSignUpTask(user);
+            mSignUpTask.execute((Void) null);
         }
+    }
+
+    private boolean isNameValid(String name)
+    {
+        //probably faster than return name.matches("[a-zA-Z]+");
+        char[] chars = name.toCharArray();
+        for (char c : chars)
+        {
+            if(!Character.isLetter(c))
+            {
+                return false;
+            }
+        }
+        return true;
     }
 
     private boolean isEmailValid(String email)
     {
-        Log.w("Login Fragment", "invalid email: " + email);
+        Log.w("SignUp Fragment", "invalid email: " + email);
         return Patterns.EMAIL_ADDRESS.matcher(email).matches();
     }
 
     private boolean isPasswordValid(String password)
     {
-        //TODO: Replace this if we want to make it more complex
         return password.length() > 4;
     }
 
     /**
-     * Shows the progress UI and hides the login form.
+     * Shows the progress UI and hides the sign up form.
      */
     @TargetApi(Build.VERSION_CODES.HONEYCOMB_MR2)
     private void showProgress(final boolean show)
@@ -307,14 +279,14 @@ public class LogInFragment extends Fragment implements LoaderManager.LoaderCallb
         {
             int shortAnimTime = getResources().getInteger(android.R.integer.config_shortAnimTime);
 
-            mLoginFormView.setVisibility(show ? View.GONE : View.VISIBLE);
-            mLoginFormView.animate().setDuration(shortAnimTime).alpha(
+            mSignUpFormView.setVisibility(show ? View.GONE : View.VISIBLE);
+            mSignUpFormView.animate().setDuration(shortAnimTime).alpha(
                     show ? 0 : 1).setListener(new AnimatorListenerAdapter()
             {
                 @Override
                 public void onAnimationEnd(Animator animation)
                 {
-                    mLoginFormView.setVisibility(show ? View.GONE : View.VISIBLE);
+                    mSignUpFormView.setVisibility(show ? View.GONE : View.VISIBLE);
                 }
             });
 
@@ -333,7 +305,7 @@ public class LogInFragment extends Fragment implements LoaderManager.LoaderCallb
             // The ViewPropertyAnimator APIs are not available, so simply show
             // and hide the relevant UI components.
             mProgressView.setVisibility(show ? View.VISIBLE : View.GONE);
-            mLoginFormView.setVisibility(show ? View.GONE : View.VISIBLE);
+            mSignUpFormView.setVisibility(show ? View.GONE : View.VISIBLE);
         }
     }
 
@@ -365,7 +337,6 @@ public class LogInFragment extends Fragment implements LoaderManager.LoaderCallb
             emails.add(cursor.getString(ProfileQuery.ADDRESS));
             cursor.moveToNext();
         }
-
         addEmailsToAutoComplete(emails);
     }
 
@@ -397,25 +368,22 @@ public class LogInFragment extends Fragment implements LoaderManager.LoaderCallb
     }
 
     /**
-     * Represents an asynchronous login task used to authenticate
-     * the user.
+     * Represents an asynchronous registration task used to register a new user
+     *
      */
-    public class UserLoginTask extends AsyncTask<Void, Void, Boolean>
+    public class UserSignUpTask extends AsyncTask<Void, Void, Boolean>
     {
+        private final User mUser;
 
-        private final String mEmail;
-        private final String mPassword;
-
-        UserLoginTask(String email, String password)
+        UserSignUpTask(User user)
         {
-            mEmail = email;
-            mPassword = password;
+            mUser = user;
         }
 
         @Override
         protected Boolean doInBackground(Void... params)
         {
-            // TODO: attempt authentication against a network service. APPSERVER/HEROKU
+            // TODO: Put new user to server
 
             try
             {
@@ -426,25 +394,16 @@ public class LogInFragment extends Fragment implements LoaderManager.LoaderCallb
                 return false;
             }
 
-            for (String credential : DUMMY_CREDENTIALS)
-            {
-                String[] pieces = credential.split(":");
-                if (pieces[0].equals(mEmail))
-                {
-                    // Account exists, return true if the password matches.
-                    return pieces[1].equals(mPassword);
-                }
-            }
 
             // Invalid mail and/or password
-            Toast.makeText(getActivity(), getString(R.string.error_invalid_login_info), Toast.LENGTH_SHORT).show(); // DEBUG
-            return false;
+            Toast.makeText(getActivity(), getString(R.string.prompt_registration_complete), Toast.LENGTH_SHORT).show();
+            return true;
         }
 
         @Override
         protected void onPostExecute(final Boolean success)
         {
-            mAuthTask = null;
+            mSignUpTask = null;
             showProgress(false);
 
             if (success)
@@ -460,8 +419,9 @@ public class LogInFragment extends Fragment implements LoaderManager.LoaderCallb
         @Override
         protected void onCancelled()
         {
-            mAuthTask = null;
+            mSignUpTask = null;
             showProgress(false);
         }
     }
+
 }
