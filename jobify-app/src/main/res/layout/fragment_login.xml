@@ -7,11 +7,9 @@
               android:paddingLeft="@dimen/activity_horizontal_margin"
               android:paddingRight="@dimen/activity_horizontal_margin"
               android:paddingTop="@dimen/activity_vertical_margin"
-              tools:context=".LoginActivity"
-              android:elevation="1dp"
+              tools:context=".LogInActivity"
               android:focusable="false"
               android:gravity="center"
-              android:minWidth="500dp"
               android:background="@android:color/holo_blue_dark">
 
     <!-- Login progress -->
@@ -57,7 +55,8 @@
                     android:hint="@string/prompt_email"
                     android:inputType="textEmailAddress"
                     android:maxLines="1"
-                    android:singleLine="true" />
+                    android:singleLine="true"
+                    android:textColor="#f8fcfc"/>
 
             </android.support.design.widget.TextInputLayout>
 
@@ -75,7 +74,8 @@
                     android:imeOptions="actionUnspecified"
                     android:inputType="textPassword"
                     android:maxLines="1"
-                    android:singleLine="true" />
+                    android:singleLine="true"
+                    android:textColor="#f8fcfc"/>
 
             </android.support.design.widget.TextInputLayout>
 
@@ -126,7 +126,8 @@
                     android:text="@string/debug_text"
                     android:id="@+id/debug_section_tittle"
                     android:layout_gravity="center_horizontal"
-                    android:textSize="24dp"/>
+                    android:textSize="24dp"
+                    android:textColor="#ebf9fc"/>
 
                 <EditText
                     android:layout_width="match_parent"
@@ -134,7 +135,8 @@
                     android:id="@+id/debug_ip_edittext"
                     android:hint="IP address"
                     android:maxLines="1"
-                    android:singleLine="true"/>
+                    android:singleLine="true"
+                    android:textColor="#f8fcfc"/>
 
                 <Button
                     style="@style/Widget.AppCompat.Button.Colored"
