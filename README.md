@@ -1,7 +1,3 @@
 #:necktie: Jobify :necktie:
 
-##Integrantes:
-* Federico Baliña
-* Matías Carballo
-* Gonzalo Guzzardi
-* Juan Patricio Marshall
+[![Build Status](https://travis-ci.org/Taller-7552-II/Jobify-app.svg?branch=master)](https://travis-ci.org/Taller-7552-II/Jobify-app)
